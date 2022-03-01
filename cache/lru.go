@@ -24,9 +24,13 @@ func (lru *LRU) RemoveKey(key string) {
 		delete(lru.knmap, key)
 		if node.prev != nil {
 			node.prev.next = node.next
+		} else {
+			lru.head = node.next
 		}
 		if node.next != nil {
 			node.next.prev = node.prev
+		} else {
+			lru.tail = node.prev
 		}
 	}
 }
@@ -38,7 +42,6 @@ func (lru *LRU) AddKey(key string) {
 	if lru.tail != nil {
 		newNode.prev = lru.tail
 		lru.tail.next = newNode
-		lru.knmap[key] = newNode
 		lru.tail = newNode
 	} else {
 		lru.head = newNode
@@ -55,8 +58,6 @@ func NewLru(limit int) *LRU {
 	lru.remaining = limit
 	lru.kvmap = make(map[string][]byte)
 	lru.knmap = make(map[string]*LinkedListNode)
-	lru.head = nil
-	lru.tail = nil
 	return lru
 }
 
@@ -91,8 +92,8 @@ func (lru *LRU) Remove(key string) (value []byte, ok bool) {
 	val, ok := lru.kvmap[key]
 	if ok {
 		lru.remaining += len(key) + len(val)
-		lru.RemoveKey(key)
 	}
+	lru.RemoveKey(key)
 	return val, ok
 }
 
@@ -112,7 +113,7 @@ func (lru *LRU) Set(key string, value []byte) bool {
 	lru.AddKey(key)
 	for lru.remaining < 0 {
 		lr := lru.head
-		lru.RemoveKey(lr.data)
+		lru.Remove(lr.data)
 	}
 	return true
 }

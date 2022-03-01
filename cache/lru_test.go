@@ -47,3 +47,12 @@ func TestLRU(t *testing.T) {
 		}
 	}
 }
+
+func TestEvictions(t *testing.T) {
+	capacity := 4
+	lru := NewLru(capacity)
+	checkCapacity(t, lru, capacity)
+	lru.Set("a", []byte("a"))
+	lru.Set("b", []byte("a"))
+	lru.Set("c", []byte("a"))
+}

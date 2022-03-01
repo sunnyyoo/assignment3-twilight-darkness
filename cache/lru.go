@@ -50,13 +50,11 @@ func (lru *LRU) Remove(key string) (value []byte, ok bool) {
 	val, ok := lru.kvmap[key]
 	if ok {
 		lru.stats.Hits++
-		//lru.remaining += len(key) + len(val)
-		//delete(lru.kvmap, key)
+		lru.remaining += len(key) + len(val)
+		delete(lru.kvmap, key)
 	} else {
 		lru.stats.Misses++
 	}
-	lru.remaining += len(key) + len(val)
-	delete(lru.kvmap, key)
 	return val, ok
 }
 
@@ -73,9 +71,6 @@ func (lru *LRU) Set(key string, value []byte) bool {
 		lru.remaining -= len(value) + len(key)
 	}
 	lru.kvmap[key] = value
-	for lru.remaining < 0 {
-		
-	}
 	return true
 }
 

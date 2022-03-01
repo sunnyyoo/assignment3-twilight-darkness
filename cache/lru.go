@@ -92,7 +92,7 @@ func (lru *LRU) Remove(key string) (value []byte, ok bool) {
 	val, ok := lru.kvmap[key]
 	if ok {
 		lru.remaining += len(key) + len(val)
-		delete(fifo.kvmap, key)
+		delete(lru.kvmap, key)
 	}
 	lru.RemoveKey(key)
 	return val, ok

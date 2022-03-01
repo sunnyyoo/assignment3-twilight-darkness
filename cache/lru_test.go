@@ -49,10 +49,12 @@ func TestLRU(t *testing.T) {
 }
 
 func TestEvictions(t *testing.T) {
-	capacity := 4
-	lru := NewLru(capacity)
-	checkCapacity(t, lru, capacity)
-	lru.Set("a", []byte("a"))
-	lru.Set("b", []byte("a"))
-	lru.Set("c", []byte("a"))
+	lru := NewLru(30)
+	lru.Set("____0",[]byte("____0"))
+	lru.Set("____1",[]byte("____0"))
+	lru.Set("____2",[]byte("____0"))
+	lru.Set("____3",[]byte("____0"))
+	if !(lru.Len() == 3) {
+		t.Errorf("Wrong length, length should be 3 your length was %d", lru.Len())
+	}
 }

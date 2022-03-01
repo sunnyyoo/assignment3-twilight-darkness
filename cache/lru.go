@@ -1,5 +1,10 @@
 package cache
 
+type LinkedListNode struct {
+	next *LinkedListNode
+	prev *LinkedListNode
+	data string
+}
 // An LRU is a fixed-size in-memory cache with least-recently-used eviction
 type LRU struct {
 	// whatever fields you want here
@@ -8,6 +13,37 @@ type LRU struct {
 	remaining int
 	limit int
 	kvmap map[string][]byte
+	knmap map[string]*LinkedListNode
+	head *LinkedListNode
+	tail *LinkedListNode
+}
+
+func (lru *LRU) RemoveKey(key string) {
+	node, ok := lru.knmap[key]
+	if ok {
+		delete(lru.knmap, key)
+		if node.prev != nil {
+			node.prev.next = node.next
+		}
+		if node.next != nil {
+			node.next.prev = node.prev
+		}
+	}
+}
+
+func (lru *LRU) AddKey(key string) {
+	newNode := new(LinkedListNode)
+	lru.knmap[key] = newNode
+	newNode.data = key
+	if lru.tail != nil {
+		newNode.prev = lru.tail
+		lru.tail.next = newNode
+		lru.knmap[key] = newNode
+		lru.tail = newNode
+	} else {
+		lru.head = newNode
+		lru.tail = newNode
+	}
 }
 
 // NewLRU returns a pointer to a new LRU with a capacity to store limit bytes
@@ -18,6 +54,9 @@ func NewLru(limit int) *LRU {
 	lru.limit = limit
 	lru.remaining = limit
 	lru.kvmap = make(map[string][]byte)
+	lru.knmap = make(map[string]*LinkedListNode)
+	lru.head = nil
+	lru.tail = nil
 	return lru
 }
 
@@ -38,6 +77,8 @@ func (lru *LRU) Get(key string) (value []byte, ok bool) {
 	val, ok := lru.kvmap[key]
 	if ok {
 		lru.stats.Hits++
+		lru.RemoveKey(key)
+		lru.AddKey(key)
 	} else {
 		lru.stats.Misses++
 	}
@@ -49,11 +90,8 @@ func (lru *LRU) Get(key string) (value []byte, ok bool) {
 func (lru *LRU) Remove(key string) (value []byte, ok bool) {
 	val, ok := lru.kvmap[key]
 	if ok {
-		lru.stats.Hits++
 		lru.remaining += len(key) + len(val)
-		delete(lru.kvmap, key)
-	} else {
-		lru.stats.Misses++
+		lru.RemoveKey(key)
 	}
 	return val, ok
 }
@@ -71,6 +109,11 @@ func (lru *LRU) Set(key string, value []byte) bool {
 		lru.remaining -= len(value) + len(key)
 	}
 	lru.kvmap[key] = value
+	lru.AddKey(key)
+	for lru.remaining < 0 {
+		lr := lru.head
+		lru.RemoveKey(lr.data)
+	}
 	return true
 }
 

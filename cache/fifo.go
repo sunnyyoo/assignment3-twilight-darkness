@@ -50,12 +50,9 @@ func (fifo *FIFO) Get(key string) (value []byte, ok bool) {
 func (fifo *FIFO) Remove(key string) (value []byte, ok bool) {
 	val, ok := fifo.kvmap[key]
 	if ok {
-		//fifo.stats.Hits++
 		fifo.remaining += len(key) + len(val)
 		delete(fifo.kvmap, key)
-	} else {
-		//fifo.stats.Misses++
-	}
+	} 
 	return val, ok
 }
 

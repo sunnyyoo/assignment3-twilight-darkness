@@ -78,7 +78,9 @@ func (fifo *FIFO) Set(key string, value []byte) bool {
 		if ok {
 			fifo.Remove(fi)
 		}
+		fifo.queue = fifo.queue[1:]
 	}
+	fifo.queue = append(fifo.queue, key)
 	return true
 }
 

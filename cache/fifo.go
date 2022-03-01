@@ -77,6 +77,7 @@ func (fifo *FIFO) Set(key string, value []byte) bool {
 		_, ok = fifo.kvmap[fi]
 		if ok {
 			fifo.Remove(fi)
+			fifo.stats.Hits--
 		}
 		fifo.queue = fifo.queue[1:]
 	}

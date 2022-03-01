@@ -50,11 +50,11 @@ func (fifo *FIFO) Get(key string) (value []byte, ok bool) {
 func (fifo *FIFO) Remove(key string) (value []byte, ok bool) {
 	val, ok := fifo.kvmap[key]
 	if ok {
-		fifo.stats.Hits++
+		//fifo.stats.Hits++
 		fifo.remaining += len(key) + len(val)
 		delete(fifo.kvmap, key)
 	} else {
-		fifo.stats.Misses++
+		//fifo.stats.Misses++
 	}
 	return val, ok
 }
@@ -77,7 +77,6 @@ func (fifo *FIFO) Set(key string, value []byte) bool {
 		_, ok = fifo.kvmap[fi]
 		if ok {
 			fifo.Remove(fi)
-			fifo.stats.Hits--
 		}
 		fifo.queue = fifo.queue[1:]
 	}
